@@ -51,19 +51,135 @@ query so that the services between 'Craiglockhart' and 'London Road' are shown.
 If you are tired of these places try 'Fairmilehead' against 'Tollcross':
 
 SELECT a.company, a.num, 
-       stopa.name, stopb.name
-FROM route AS a 
-JOIN route AS b 
- ON (a.company = b.company AND 
-     a.num = b.num)
-JOIN stops AS stopa 
- ON (a.stop = stopa.id)
-JOIN stops AS stopb 
- ON (b.stop = stopb.id)
-WHERE stopa.name = 'Craiglockhart' AND
-      stopb.name = 'London Road';
+       sa.name AS start, 
+       sb.name AS stop
+FROM route a 
+JOIN route b 
+ ON (a.company = b.company AND a.num = b.num)
+JOIN stops sa
+ ON a.stop = sa.id
+JOIN stops sb 
+ ON b.stop = sb.id
+WHERE sa.name = 'Craiglockhart' AND
+      sb.name = 'London Road';
 
 
 7. Give a list of all the services which connect 
 stops 115 and 137 ('Haymarket' and 'Leith'):
+
+SELECT DISTINCT a.company, a.num 
+FROM route a
+JOIN route b
+ ON (a.company = b.company AND a.num = b.num)
+WHERE a.stop = 115 AND 
+      b.stop = 137;
+
+
+8. Give a list of the services which connect the stops 'Craiglockhart' and 'Tollcross':
+
+SELECT DISTINCT a.company, a.num 
+FROM route a
+JOIN route b
+ ON (a.company = b.company AND a.num = b.num)
+JOIN stops sa
+ ON a.stop = sa.id
+JOIN stops sb
+ ON b.stop = sb.id
+WHERE sa.name = 'Craiglockhart' AND
+      sb.name = 'Tollcross';
+
+
+9. Give a distinct list of the stops which may be reached from 'Craiglockhart' by 
+taking one bus, including 'Craiglockhart' itself, offered by the LRT company. 
+Include the company and bus no. of the relevant services:
+
+SELECT DISTINCT sb.name, b.company, b.num  
+FROM route a
+JOIN route b
+ ON (a.num = b.num AND a.company = b.company)
+JOIN stops sa
+ ON a.stop = sa.id
+JOIN stops sb
+ ON b.stop = sb.id
+WHERE sa.name = 'Craiglockhart';
+
+
+10. Find the routes involving two buses that can go from Craiglockhart to Lochend.
+Show the bus no. and company for the first bus, the name of the stop for the transfer,
+and the bus no. and company for the second bus:
+
+Method 1:
+
+SELECT t1.start_num, t1.start_com, 
+       t2.start, t2.start_num, t2.start_com 
+FROM
+(SELECT DISTINCT a.num AS start_num, 
+                 a.company AS start_com, 
+                 sa.name AS start, 
+                 sb.name AS stop 
+FROM route a
+JOIN route b
+ ON (a.num = b.num AND a.company = b.company)
+JOIN stops sa
+ ON a.stop = sa.id
+JOIN stops sb
+ ON b.stop = sb.id
+WHERE sa.name = 'Craiglockhart' AND 
+      sb.name != 'Craiglockhart') AS t1
+
+JOIN
+
+(SELECT DISTINCT b.num as start_num, 
+                 b.company as start_com, 
+                 sb.name AS start, 
+                 sc.name AS stop 
+FROM route b
+JOIN route c
+ ON (b.num = c.num AND b.company = c.company)
+JOIN stops sb
+ ON b.stop = sb.id
+JOIN stops sc
+ ON c.stop = sc.id
+WHERE sc.name = 'Lochend' AND 
+      sb.name != 'Lochend') AS t2
+ON t1.stop = t2.start
+
+_________________________________________________________________________________
+Method 2 (using CTEs):
+
+WITH t1 AS 
+(SELECT DISTINCT a.num AS start_num, 
+                 a.company AS start_com, 
+                 sa.name AS start, 
+                 sb.name AS stop 
+FROM route a
+JOIN route b
+ ON (a.num = b.num AND a.company = b.company)
+JOIN stops sa
+ ON a.stop = sa.id
+JOIN stops sb
+ ON b.stop = sb.id
+WHERE sa.name = 'Craiglockhart' AND 
+      sb.name != 'Craiglockhart'),
+
+t2 AS
+(SELECT DISTINCT b.num as start_num, 
+                 b.company as start_com, 
+                 sb.name AS start, 
+                 sc.name AS stop 
+FROM route b
+JOIN route c
+ ON (b.num = c.num AND b.company = c.company)
+JOIN stops sb
+ ON b.stop = sb.id
+JOIN stops sc
+ ON c.stop = sc.id
+WHERE sc.name = 'Lochend' AND 
+      sb.name != 'Lochend')
+
+SELECT t1.start_num, t1.start_com, 
+       t2.start, t2.start_num, t2.start_com
+FROM t1
+JOIN t2
+ ON t1.stop= t2.start
 
