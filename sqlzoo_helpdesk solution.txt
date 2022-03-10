@@ -139,6 +139,29 @@ JOIN Staff
  ON Issue.taken_by = Staff.staff_code
 WHERE Caller.first_name = 'Harry'
 ORDER BY call_date DESC
-LIMIT 1
+LIMIT 1;
 
 
+-----------------------------------------------------------------------------------------
+Helpdesk Hard Questions
+
+11. Show the manager, and number of calls received for each hour of the day on 2017-08-12:
+
+WITH view AS (
+SELECT call_date,
+       DATE_FORMAT(call_date, '%Y-%m-%d') AS dates,
+       DATE_FORMAT(call_date, '%H') AS hours
+FROM Issue
+WHERE DATE(call_date) = '2017-08-12'
+)
+
+SELECT manager, 
+       DATE_FORMAT(call_date, '%Y-%m-%d %H') AS hr,
+       COUNT(*)
+FROM Shift
+JOIN view
+ ON Shift.shift_date = view.dates
+WHERE (shift_type = 'Early' AND hours < 14) OR
+      (shift_type = 'Late' AND hours >= 14)
+GROUP BY manager, hr
+ORDER BY hours;
