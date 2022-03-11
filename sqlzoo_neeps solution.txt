@@ -1,0 +1,98 @@
+Neeps easy questions
+
+1. Give the room id in which the event co42010.L01 takes place:
+
+SELECT room FROM event
+WHERE id LIKE 'co42010.L01';
+
+
+2. For each event in module co72010 show the day, the time and the place:
+
+SELECT dow, tod, room FROM event
+WHERE modle LIKE 'co72010';
+
+
+3. List the names of the staff who teach on module co72010:
+
+SELECT DISTINCT name 
+FROM event
+JOIN teaches
+ ON event.id = teaches.event
+JOIN staff
+ ON teaches.staff = staff.id
+WHERE modle LIKE 'co72010';
+
+
+4. Give a list of the staff and module number associated with events using 
+room cr.132 on Wednesday, include the time each event starts:
+
+SELECT name, modle, tod 
+FROM event
+JOIN teaches
+ ON event.id = teaches.event
+JOIN staff
+ ON teaches.staff = staff.id
+WHERE room LIKE 'cr.132' AND dow LIKE 'Wednesday';
+
+
+5. Give a list of the student groups which take modules with the word 'Database' 
+in the name:
+
+SELECT DISTINCT name 
+FROM event
+JOIN attends
+ ON event.id = attends.event
+JOIN student
+ ON attends.student = student.id
+WHERE modle IN (SELECT id FROM modle
+                WHERE name LIKE '%Database%');
+
+
+-------------------------------------------------------------------------------------
+Neeps medium questions
+
+6. Show the 'size' of each of the co72010 events. Size is the total number of 
+students attending each event:
+
+SELECT event.id, SUM(sze)
+FROM event
+JOIN attends
+ ON event.id = attends.event
+JOIN student
+ ON attends.student = student.id
+WHERE modle LIKE 'co72010'
+GROUP BY event.id;
+
+
+7. For each post-graduate module, show the size of the teaching team. (post 
+graduate modules start with the code co7):
+
+SELECT modle, COUNT(DISTINCT name) 
+FROM event
+JOIN teaches
+ ON event.id = teaches.event
+JOIN staff
+ ON teaches.staff = staff.id
+WHERE modle IN (SELECT id FROM modle
+WHERE id LIKE 'co7%')
+GROUP BY modle;
+
+
+8. Give the full name of those modules which include events taught for fewer 
+than 10 weeks:
+
+SELECT DISTINCT name 
+FROM modle
+JOIN event
+ ON modle.id = event.modle
+JOIN occurs
+ ON occurs.event = event.id
+GROUP BY event.id, name
+HAVING COUNT(week) < 10;
+
+
+9. Identify those events which start at the same time as one of the co72010 lectures:
+
+SELECT id FROM event
+WHERE CONCAT(dow, tod) IN (SELECT CONCAT(dow, tod) FROM event
+                           WHERE modle LIKE 'co72010');
