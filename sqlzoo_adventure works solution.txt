@@ -51,7 +51,7 @@ WHERE customerid = (SELECT customerid FROM Customer
                    WHERE name = 'Racing Socks, L');
 
 
---
+------------------------------------------------------------------------------------------
 AdventureWorks medium questions
 
 6. A "Single Item Order" is a customer order where only one item is ordered. 
