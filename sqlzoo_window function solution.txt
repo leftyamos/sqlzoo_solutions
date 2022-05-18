@@ -43,29 +43,28 @@ ORDER BY ranking, constituency;
 
 5. Show the parties that won for each Edinburgh constituency in 2017:
 
-SELECT constituency, party
+SELECT constituency, party 
 FROM (SELECT constituency, party, votes,
-             RANK() OVER(PARTITION BY constituency
-                         ORDER BY votes DESC) AS ranking
-      FROM ge
-      WHERE constituency BETWEEN 'S14000021' AND 'S14000026' AND
-            yr = 2017
-      ORDER BY ranking, constituency) as x
+       RANK() OVER(PARTITION BY constituency
+                   ORDER BY votes DESC) AS ranking
+FROM ge
+WHERE constituency BETWEEN 'S14000021' AND 'S14000026' AND 
+      yr = 2017) AS x
 WHERE x.ranking = 1;
 
 
 6. Show how many seats for each party in Scotland in 2017:
 
-SELECT party, COUNT(party)
+SELECT party, COUNT(*)
 FROM (SELECT constituency, party, votes,
-             RANK() OVER(PARTITION BY constituency
-                         ORDER BY votes DESC) AS ranking
-      FROM ge
-      WHERE constituency LIKE 'S%' AND
-            yr = 2017
-      ORDER BY ranking, constituency) as x
+       RANK() OVER(PARTITION BY constituency
+                   ORDER BY votes DESC) AS ranking
+FROM ge
+WHERE constituency LIKE 'S%' AND 
+      yr = 2017) AS x
 WHERE x.ranking = 1
 GROUP BY party;
+
 
 ----------------------------------------------------------------------------------------
 Window LAG
@@ -79,7 +78,6 @@ WHERE name = 'Spain' AND
       MONTH(whn) = 3 AND
       YEAR(whn) = 2020
 ORDER BY whn;
-
 
 
 2. Modify the query to show confirmed for the day before:
